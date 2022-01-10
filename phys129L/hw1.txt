@@ -1,0 +1,22 @@
+ 	
+
+1.
+a) There are two possibilities for each character, so the total possibilities are 2^8, or 256 possibilities.
+b) Similarly, the total possibilities are 16^4, or 65,536 possibilities.
+c) 26^2 = 676.
+d) There are 2*26 = 52 possibilities for the alphabetical characters, plus 10 for the digits for 62 possibilities per character.
+    There are 8 characters, so 62^8 = 218,340,105,584,896 yields the total number of possibilities.
+e) For 94 possibilities per character, we have 94^8, or 6,095,689,385,410,816 total possibilities.
+
+2.
+a) There are 94^12 possibilities which is roughly 4.759*10^23. We can divide this figure by 10^12 guesses per second to get roughly 4.759^10^11 seconds. This is just under 15,100 years.
+b) There are 53 possibilities per character, so we need to find n such that 53^n = 94^12. We can take the 12th root to get 53^(n/12) = 94, then n/12 = log(94)/log(53). Therefore n = 13.73... so we need at least 14 characters to match the strength of the student's password.
+
+3. 53^14 is approx. 1.38*10^24. Dividing by 10^11 guesses per second, we have 1.38*10^13 seconds, or 1.597*10^8 days.
+
+4.
+a) There are 2 bytes in 16 bits. So we have 20 million bytes per second, and for 100 seconds that works out to 2 billion bytes, or 2 gigabytes.
+b) There are now 4 bytes, so the file size becomes 4 gigabytes. This is because we can represent twice the amount of data with a 32-bit float.
+c) ASCII is 8-bit so instead of doubling the file size, we halve it instead, so the file is one gigabyte.
+
+5. rm -rf /
