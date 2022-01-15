@@ -1,0 +1,52 @@
+5.
+dfr is aliased to `find . -maxdepth 1 -mtime -1 -o -ctime -1'
+The find command searches for files starting at the given file name, which is '.' in this case
+This is the current directory, so it finds files in the current directory and its sub-directories.
+
+-maxdepth 1 means it searches sub-directories but not further. So instead of just returning the current
+directory, '.', it also returns the files or subdirectories inside the current directory.
+
+-mtime gives files that were modified within the past n*24 hours, so that corresponds to files or folders
+that were modified within the past day because n=-1.
+
+-o is the OR operator, so it checks the second condition and returns the file if either or both of the
+conditions are satisfied.
+
+-ctime gives files or folders that had their status changed n*24 hours ago, so this is also one day.
+
+Overall, this alias looks for modified/changed files or folders within the past day in the current directory.
+
+6.
+#!/bin/sh is the shebang that tells the computer which shell to run the file with.
+The variable SUMCOMMAND is initialized to 'md5sum' which is a command to check the md5 checksum of a file.
+The variable PROGNAME is initialized to the name of the program being run, which should be 'ds'.
+($0 is a shell variable that corresponds to the name of the script).
+The variable USAGE is initialized to a string containing the name of the program and [directory].
+It's telling the user to pass a directory name as command line arguments to the program.
+The variable NARGSa is initialized to 0.
+The variable NARGSb is initialized to 1.
+The NARGS variables are used to check the number of command line arguments passed to the program.
+Next, the error_exit() function is defined. It prints the first function argument, then prints
+the statement "ds exiting." The echo "" statements just print blank lines.
+'exit 1' exits the program with exit code 1 (which usually means an error happened).
+Then, the errorcheck() function is defined. It checks if the last command exited with an error.
+The if statement says, if the last command exit code is not zero, then call error_exit with the
+message to be printed. '$?' is a variable containing the exit code of the last command, and
+'-ne' means "not equals."
+Then, the script checks the number of command line arguments. If the number of command line arguments
+is not equal to 0 or 1, (NARGSa and NARGSb), then exit with the error message printing the usage statement.
+'-a' means "and", and '-ne' means "not equals."
+If the number of arguments is 1, meaning a directory is specified, then unset the CDPATH enviroment variable
+(this makes sure that we are changing directories relative to the current directory and not anywhere else.)
+Then, it runs 'cd' and streams the output to /dev/null, which redirects any output instead of displaying it.
+If there was an error, the errorcheck function catches it and notifies the user.
+Next, the program runs 'find' on the current directory and finds files within it.
+The '-noleaf' option allows compatibility with filesystems that don't follow Unix convention, such as
+MS-DOS or AFS. It also increases the search speed.
+'-type f' means search for files only.
+The files in the current directory are piped to 'sort', which sorts the files alphabetically by filename.
+Finally, the list of files in the file directory are passed to a while loop which does the following:
+read each filename, then run the 'cat' command on the file, then pipe the 'cat' output to the command
+$SUMCOMMAND, which is 'md5sum.'
+Essentially, we are computing the MD5 hash for each file and outputting it on the command line.
+Thus, the script prints out the MD5 hash for the files in the current directory in alphabetical order.
