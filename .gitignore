@@ -1,0 +1,6 @@
+# general files:
+*.zip
+
+# emacs autosave & temp files
+*~
+\#*\#
