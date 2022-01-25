@@ -71,7 +71,11 @@ def main():
 
     I've elected to write a test function to run all these cases
     instead of writing 8 for loops since I frankly believe it's
-    better programming practice.
+    better programming practice. The wrapper function does include
+    a bit of overhead since exec() runs code checking, but since
+    I am testing all the code in the same way, one can still get a
+    decent idea of how long things take relative to just a `pass`
+    statement.
 
     The tests are stored in a dictionary with a description of the test.
     Each test contains an expression to be tested, which is then
