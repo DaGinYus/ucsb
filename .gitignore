@@ -1,6 +1,8 @@
-# general files:
+# General rules:
 *.zip
+*.DS_Store
+*.venv
 
-# emacs autosave & temp files
+# Emacs autosave & temp files
 *~
 \#*\#
