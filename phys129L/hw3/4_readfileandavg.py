@@ -23,6 +23,7 @@ def main():
             lines = f.readlines()
     except FileNotFoundError:
         print("File not found! Exiting.")
+        return
 
     total = 0
     count = 0
