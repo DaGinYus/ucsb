@@ -37,7 +37,7 @@ def main():
     lower_factors = divisors[np.where(result == 0)]
     upper_factors = dividend[:len(lower_factors)] / lower_factors
     output = np.append(lower_factors, upper_factors).astype(int)
-    print(' '.join(map(str, output)))
+    print(' '.join(str(n) for n in output))
     
 
 if __name__ == "__main__":
