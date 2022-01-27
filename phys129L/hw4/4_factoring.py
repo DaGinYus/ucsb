@@ -6,8 +6,8 @@ Phys 129L Hw4 Pb4
 2022-02-03
 """
 
+import math
 import random
-import numpy as np
 
 
 def isprime(num, k=40):
@@ -74,7 +74,7 @@ def pollardrho(num, count=0):
         tort = (tort**2 + 1 + count)%num
         hare = (hare**2 + 1 + count)%num
         hare = (hare**2 + 1 + count)%num
-        d = int(np.gcd(np.abs(tort-hare), num))
+        d = math.gcd(abs(tort-hare), num)
 
         if d == num:
             # the test failed, try with a different starting value
