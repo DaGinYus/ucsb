@@ -59,7 +59,7 @@ def pollardrho(num, count=0):
 
     Returns:
         d: a factor of num
-"""
+    """
     if isprime(num):
         return num
     # starting values
