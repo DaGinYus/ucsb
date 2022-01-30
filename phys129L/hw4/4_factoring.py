@@ -89,8 +89,7 @@ def factorize(factors, reseed=False):
     This algorithm is faster than trial by division for large numbers.
     Factors of 2 are repeatedly divided first, leaving an odd number to
     factorize. Then the function is repeatedly called over the running
-    list of factors until they are all prime. Since we insert the
-    smaller factor ahead of the larger one, the list ends up sorted.
+    list of factors until they are all prime.
 
     Args:
         factors: a list of the current factors, which should only
@@ -145,6 +144,7 @@ def main():
             print("Please enter an integer.")
 
     result = factorize([num])
+    result.sort()
     print(' '.join([str(n) for n in result]))
     
 
