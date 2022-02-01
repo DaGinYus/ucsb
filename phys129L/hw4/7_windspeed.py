@@ -26,7 +26,7 @@ def main():
     ax.set_xticks(np.arange(0, 25, 4))
     ax.set_ylim([0, 12])
     ax.set_xlabel("Time [h]")
-    ax.set_ylabel("Wind Speed [kn]")
+    ax.set_ylabel("Wind Speed [kt]")
     fig.savefig("plot.pdf")
 
 if __name__ == "__main__":
