@@ -22,7 +22,7 @@ def main():
     """
     X = 512 # width
     Y = 512 # height
-    C = 0xFF # color
+    C = (0, 0, 255) # color
     W = 1 # line weight
     
     # pixel values: x, y, color (in RGB)
@@ -34,7 +34,13 @@ def main():
     # the hypotenuse is given by the equation y = (adj/opp)*x
     width = 512
     height = width*3//4
-    bounds = np.where(np.any(pvals[:,] < width, pvals[width,:] < height))
+    pvals[:width, 0:20] = C
+
+    # flip the image to conform to conventional image coordinates
+    plotarr = np.flipud(pvals.transpose(1, 0, 2))
+    
+    plt.imshow(plotarr, interpolation="none")
+    plt.show()
     
 
 if __name__ == "__main__":
