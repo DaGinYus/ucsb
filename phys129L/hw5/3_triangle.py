@@ -20,22 +20,35 @@ def main():
     background. This will cut off any overlap made by the width of the
     lines.
     """
+    # define image parameters
     X = 512 # width
     Y = 512 # height
-    C = (0, 0, 255) # color
-    W = 1 # line weight
+    BG = (255, 255, 255) # white
+    FG = (0, 0, 255) # color
+    LW = 15 # line weight
     
     # pixel values: x, y, color (in RGB)
-    pvals = np.zeros((X, Y, 3), dtype="uint8")
+    pvals = np.full((X, Y, 3), BG, dtype="uint8")
     print(np.shape(pvals))
 
     # divide up the triangle into 3 lines:
-    # the adjacent (base), opposite (height), and hypotenuse
+    # the adjacent (base), opposite (leg), and hypotenuse
     # the hypotenuse is given by the equation y = (adj/opp)*x
-    width = 512
+    width = 400
     height = width*3//4
-    pvals[:width, 0:20] = C
-
+    # offset is defined to be from the bottom left corner
+    offset_x = 51
+    offset_y = 51
+    edge_r = offset_x + width
+    # set the base
+    pvals[offset_x:edge_r, offset_y:LW+offset_y] = FG
+    # set leg (subtract LW since we are filling inside)
+    pvals[edge_r-LW:edge_r, offset_y:offset_y+height+LW//2] = FG
+    # set hypotenuse
+    xvals = np.arange(offset_x, edge_r)
+    yvals = height*xvals//width + LW
+    for i in range(LW):
+        pvals[xvals, yvals+i] = FG
     # flip the image to conform to conventional image coordinates
     plotarr = np.flipud(pvals.transpose(1, 0, 2))
     
