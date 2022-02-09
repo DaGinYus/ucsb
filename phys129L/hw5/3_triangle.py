@@ -11,50 +11,73 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 
+def draw_triangle(pvals, xcoord, ycoord, width, height, color):
+    """Draws a filled in triangle in the following orientation:
+    
+          /|
+         / |
+        /  |
+        ---
+
+    Args:
+        pvals: The pixel value array. The function sets values in the
+            pixel value array to the color.
+        xcoord: The x-coordinate offset for the bottom left point of 
+            the triangle.
+        ycoord: The y-coordinate offset.
+        width: The width of the base of the triangle.
+        height: The height of the triangle.
+        color: The color in RGB format given as a tuple.
+    """
+    for x in range(width):
+        y = height*x//width + ycoord
+        pvals[x+xcoord, ycoord:y] = color
+
+
 def main():
     """Draws a 3-4-5 right triangle by setting individual pixels.
 
-    The thick lines are created by filling in the inside of the boundary
-    with a certain width. The image excluding the area inside the
-    boundary is then filled in with white pixel values to form the
-    background. This will cut off any overlap made by the width of the
-    lines.
+    The image is recreated by drawing a blue triangle, then
+    drawing a white triangle on top of it.
     """
     # define image parameters
-    X = 512 # width
-    Y = 512 # height
-    BG = (255, 255, 255) # white
-    FG = (0, 0, 255) # color
-    LW = 15 # line weight
+    IMAGEX = 512 # width
+    IMAGEY = 512 # height
+    BGCOLOR = (255, 255, 255) # white
+    FGCOLOR = (0, 0, 255) # color
     
     # pixel values: x, y, color (in RGB)
-    pvals = np.full((X, Y, 3), BG, dtype="uint8")
-    print(np.shape(pvals))
+    pvals = np.full((IMAGEX, IMAGEY, 3), BGCOLOR, dtype="uint8")
 
-    # divide up the triangle into 3 lines:
-    # the adjacent (base), opposite (leg), and hypotenuse
-    # the hypotenuse is given by the equation y = (adj/opp)*x
-    width = 400
-    height = width*3//4
-    # offset is defined to be from the bottom left corner
-    offset_x = 51
-    offset_y = 51
-    edge_r = offset_x + width
-    # set the base
-    pvals[offset_x:edge_r, offset_y:LW+offset_y] = FG
-    # set leg (subtract LW since we are filling inside)
-    pvals[edge_r-LW:edge_r, offset_y:offset_y+height+LW//2] = FG
-    # set hypotenuse
-    xvals = np.arange(offset_x, edge_r)
-    yvals = height*xvals//width + LW
-    for i in range(LW):
-        pvals[xvals, yvals+i] = FG
+    # parameters for the blue triangle
+    fg_w = 400
+    fg_h = fg_w*3//4
+    fg_x = 51
+    fg_y = 51
+    # draw blue triangle
+    draw_triangle(pvals, fg_x, fg_y, fg_w, fg_h, FGCOLOR)
+
+    # parameters for the white triangle
+    # scale it by 80%
+    bg_w = int(0.8*fg_w)
+    bg_h = int(0.8*fg_h)
+    # offset it by 20 pixels compared to the other triangle
+    # (as measured by bottom right corner)
+    bg_x = fg_w - bg_w - 20 + fg_x
+    bg_y = 20 + fg_y
+    draw_triangle(pvals, bg_x, bg_y, bg_w, bg_h, BGCOLOR)
+    
     # flip the image to conform to conventional image coordinates
     plotarr = np.flipud(pvals.transpose(1, 0, 2))
     
     plt.imshow(plotarr, interpolation="none")
+    plt.axis("off")
     plt.show()
-    
+
+    # save image to TIFF img.tif
+    im = Image.fromarray(plotarr, "RGB")
+    im.save("img.tif")
+
 
 if __name__ == "__main__":
     main()
