@@ -46,12 +46,8 @@ def draw_triangle(pvals, a, b, c, color, linew=10):
     three equations. The triangle is filled in by setting pixel values
     that fall in the range defined by the three equations.
 
-    Line thickness is done by creating a truth-value array that is
-    filled in with the shape of the triangle, then overwriting an
-    'inner triangle' with false values, indicating that the background
-    should be left untouched there. Then the function overwrites pvals
-    wherever the array is true. This means the function can handle
-    a background that is nonuniform in color.
+    Line thickness is done by creating a copy of the background in the
+    shape of a smaller triangle, then drawing it over the triangle.
 
     The inner triangle is created by scaling the triangle by a certain
     ratio, keeping the centroids the same.
