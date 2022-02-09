@@ -72,12 +72,23 @@ def draw_triangle(pvals, a, b, c, color, linew=10):
     p = points[np.argsort(points[:,0])]
     leftx, midx, rightx = p[:,0]
 
-    # start from left to middle x-coordinate
-    for x in range(midx-leftx):
-        # just use equation of line from 2 points
-        y1 = (p[1,1]-p[0,1])*(x-p[0,0])//(p[1,0]-p[0,0]) + p[0,1]
-        y2 = (p[2,1]-p[0,1])*(x-p[0,0])//(p[2,0]-p[0,0]) + p[0,1]
-        print(f"{y1}, {y2}")
+    # slopes
+    m1, m2 = [(p[i,1]-p[0,1])/(p[i,0]-p[0,0]) for i in [1,2]]
+    m = sorted([m1, m2], key=abs)
+    # the third slope is the steeper one calculated from the rightmost point
+    m3, m4 = [(p[i,1]-p[2,1])/(p[i,0]-p[2,0]) for i in [0,1]]
+    m.append(max([m3, m4], key=abs))
+    print(m)
+    for x in range(rightx-leftx):
+        # plot in 2 sections, the left and right sides based on the midpoint
+        # (this is because the system of equations changes)
+        # the steeper slope corresponds to the shorter triangle leg
+        # the longer leg is plotted in one piece
+        y1 = int(round(m[0]*(x-p[0,0]))) + p[0,1]
+        if x < midx-leftx:
+            y2 = int(round(m[1]*(x-p[0,0]))) + p[0,1]
+        elif x >= midx:
+            y2 = int(round(m[2]*(x-p[1,0]))) + p[1,1]
         y = np.sort([y1, y2])
         pvals[x+leftx, y[0]:y[1]] = color
 
@@ -88,7 +99,7 @@ def main():
     Line thickness is created by blitting a copy of the background
     on top of a filled triangle. At the expense of speed, we get
     a programmatically simpler solution with uniform line thickness
-    on all three sides.
+    on all three sides (and nice looking corners).
     """
     # define image parameters
     IMAGEX = 512 # width
@@ -100,7 +111,7 @@ def main():
     pvals = np.full((IMAGEX, IMAGEY, 3), BGCOLOR, dtype="uint8")
 
     # draw blue triangle
-    draw_triangle(pvals, (0,0), (400,300), (400,200), FGCOLOR)
+    draw_triangle(pvals, (0,0), (400,300), (500,200), FGCOLOR)
 
     # flip the image to conform to conventional image coordinates
     plotarr = np.flipud(pvals.transpose(1, 0, 2))
