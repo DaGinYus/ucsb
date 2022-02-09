@@ -33,8 +33,8 @@ def validate_points(a, b, c):
         return True
     return False
 
-def draw_triangle(pvals, a, b, c, color, linew=10):
-    """Draws a triangle, e.g.
+def draw_triangle(pvals, a, b, c, color):
+    """Draws a filled triangle, e.g.
 
            a
           /|
@@ -46,12 +46,6 @@ def draw_triangle(pvals, a, b, c, color, linew=10):
     three equations. The triangle is filled in by setting pixel values
     that fall in the range defined by the three equations.
 
-    Line thickness is done by creating a copy of the background in the
-    shape of a smaller triangle, then drawing it over the triangle.
-
-    The inner triangle is created by scaling the triangle by a certain
-    ratio, keeping the centroids the same.
-
     Args:
         pvals: The pixel value array. The function sets values in the
             pixel value array to the color.
@@ -59,10 +53,8 @@ def draw_triangle(pvals, a, b, c, color, linew=10):
         b [int]: Another coordinate
         c [int]: A final coordinate
         color [int]: The color in RGB format.
-        linew (int): The width of the line.
     """
     points = np.array([a,b,c])
-    centroid = (np.sum(points[:0])//3, np.sum(points[:1]//3))
 
     # sort points from leftmost to rightmost x-coordinate
     p = points[np.argsort(points[:,0])]
@@ -74,15 +66,14 @@ def draw_triangle(pvals, a, b, c, color, linew=10):
     # the third slope is the steeper one calculated from the rightmost point
     m3, m4 = [(p[i,1]-p[2,1])/(p[i,0]-p[2,0]) for i in [0,1]]
     m.append(max([m3, m4], key=abs))
-    print(m)
     for x in range(rightx-leftx):
         # plot in 2 sections, the left and right sides based on the midpoint
         # (this is because the system of equations changes)
         # the steeper slope corresponds to the shorter triangle leg
         # the longer leg is plotted in one piece
-        y1 = int(round(m[0]*(x-p[0,0]))) + p[0,1]
+        y1 = round(m[0]*(x-p[0,0])) + p[0,1]
         if x < midx-leftx:
-            y2 = int(round(m[1]*(x-p[0,0]))) + p[0,1]
+            y2 = round(m[1]*(x-p[0,0])) + p[0,1]
         elif x >= midx:
             y2 = int(round(m[2]*(x-p[1,0]))) + p[1,1]
         y = np.sort([y1, y2])
