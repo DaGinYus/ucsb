@@ -11,62 +11,97 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 
-def draw_triangle(pvals, xcoord, ycoord, width, height, color):
-    """Draws a filled in triangle in the following orientation:
+def validate_points(a, b, c):
+    """Checks the validity of points using the triangle inequality.
+
+    Args:
+        a [int]: A coordinate in (x, y) format.
+        b [int]: Another coordinate in (x, y) format.
+        c [int]: The final coordinate.
     
+    Returns:
+        valid: A boolean value for whether or not it's valid.
+    """
+    # calculate the side lengths using Euclidian distance
+    ax, ay = a
+    bx, by = b
+    cx, cy = c
+    ab = np.sqrt((ax-bx)**2 + (ay-by)**2)
+    bc = np.sqrt((bx-cx)**2 + (by-cy)**2)
+    ca = np.sqrt((cx-ax)**2 + (cy-ay)**2)
+    if 2*max(ab, bc, ca) < ab + bc + ca:
+        return True
+    return False
+
+def draw_triangle(pvals, a, b, c, color, linew=10):
+    """Draws a triangle, e.g.
+
+           a
           /|
          / |
         /  |
-        ---
+       b---c
+
+    This is done by starting at the leftmost coordinate and defining
+    three equations. The triangle is filled in by setting pixel values
+    that fall in the range defined by the three equations.
+
+    Line thickness is done by creating a truth-value array that is
+    filled in with the shape of the triangle, then overwriting an
+    'inner triangle' with false values, indicating that the background
+    should be left untouched there. Then the function overwrites pvals
+    wherever the array is true. This means the function can handle
+    a background that is nonuniform in color.
+
+    The inner triangle is created by scaling the triangle by a certain
+    ratio, keeping the centroids the same.
 
     Args:
         pvals: The pixel value array. The function sets values in the
             pixel value array to the color.
-        xcoord: The x-coordinate offset for the bottom left point of 
-            the triangle.
-        ycoord: The y-coordinate offset.
-        width: The width of the base of the triangle.
-        height: The height of the triangle.
-        color: The color in RGB format given as a tuple.
+        a [int]: A coordinate in (x, y) for a vertex of the triangle
+        b [int]: Another coordinate
+        c [int]: A final coordinate
+        color [int]: The color in RGB format.
+        linew (int): The width of the line.
     """
-    for x in range(width):
-        y = height*x//width + ycoord
-        pvals[x+xcoord, ycoord:y] = color
+    points = np.array([a,b,c])
+    centroid = (np.sum(points[:0])//3, np.sum(points[:1]//3))
+
+    # sort points from leftmost to rightmost x-coordinate
+    p = points[np.argsort(points[:,0])]
+    leftx, midx, rightx = p[:,0]
+
+    # start from left to middle x-coordinate
+    for x in range(midx-leftx):
+        # just use equation of line from 2 points
+        y1 = (p[1,1]-p[0,1])*(x-p[0,0])//(p[1,0]-p[0,0]) + p[0,1]
+        y2 = (p[2,1]-p[0,1])*(x-p[0,0])//(p[2,0]-p[0,0]) + p[0,1]
+        print(f"{y1}, {y2}")
+        y = np.sort([y1, y2])
+        pvals[x+leftx, y[0]:y[1]] = color
 
 
 def main():
-    """Draws a 3-4-5 right triangle by setting individual pixels.
+    """Allows the user to specify a triangle to draw.
 
-    The image is recreated by drawing a blue triangle, then
-    drawing a white triangle on top of it.
+    Line thickness is created by blitting a copy of the background
+    on top of a filled triangle. At the expense of speed, we get
+    a programmatically simpler solution with uniform line thickness
+    on all three sides.
     """
     # define image parameters
     IMAGEX = 512 # width
     IMAGEY = 512 # height
-    BGCOLOR = (255, 255, 255) # white
-    FGCOLOR = (0, 0, 255) # color
+    BGCOLOR = (255,255,255) # white
+    FGCOLOR = (0,0,255) # color
     
     # pixel values: x, y, color (in RGB)
     pvals = np.full((IMAGEX, IMAGEY, 3), BGCOLOR, dtype="uint8")
 
-    # parameters for the blue triangle
-    fg_w = 400
-    fg_h = fg_w*3//4
-    fg_x = 51
-    fg_y = 51
     # draw blue triangle
-    draw_triangle(pvals, fg_x, fg_y, fg_w, fg_h, FGCOLOR)
+    draw_triangle(pvals, (0,0), (400,300), (400,200), FGCOLOR)
 
-    # parameters for the white triangle
-    # scale it by 80%
-    bg_w = int(0.8*fg_w)
-    bg_h = int(0.8*fg_h)
-    # offset it by 20 pixels compared to the other triangle
-    # (as measured by bottom right corner)
-    bg_x = fg_w - bg_w - 20 + fg_x
-    bg_y = 20 + fg_y
-    draw_triangle(pvals, bg_x, bg_y, bg_w, bg_h, BGCOLOR)
-    
     # flip the image to conform to conventional image coordinates
     plotarr = np.flipud(pvals.transpose(1, 0, 2))
     
