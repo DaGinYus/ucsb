@@ -11,27 +11,79 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 
-def validate_points(a, b, c):
-    """Checks the validity of points using the triangle inequality.
+class Triangle:
+    def __init__(self, a, b, c):
+        """Initializes based on vertex coordinates (sorted by x value).
+        
+        Args:
+            a (int, int): A coordinate in (x,y) format.
+            b (int, int): The second coordinate in (x,y) format.
+            c (int, int): The third coordinate in (x,y) format.
+        """
+        points = np.array([a, b, c])
+        self.points = points[np.argsort(points[:,0])]
+        self.a, self.b, self.c = self.points
+        self.set_lengths()
+        self.set_slopes()
 
-    Args:
-        a [int]: A coordinate in (x, y) format.
-        b [int]: Another coordinate in (x, y) format.
-        c [int]: The final coordinate.
-    
-    Returns:
-        valid: A boolean value for whether or not it's valid.
-    """
-    # calculate the side lengths using Euclidian distance
-    ax, ay = a
-    bx, by = b
-    cx, cy = c
-    ab = np.sqrt((ax-bx)**2 + (ay-by)**2)
-    bc = np.sqrt((bx-cx)**2 + (by-cy)**2)
-    ca = np.sqrt((cx-ax)**2 + (cy-ay)**2)
-    if 2*max(ab, bc, ca) < ab + bc + ca:
-        return True
-    return False
+    def set_lengths(self):
+        """Calculates the side lengths of a triangle.
+        
+        Appends to the list the distance between the current point
+        and the next point in the list (mod 3)
+        """
+        lengths = []
+        for i, point in enumerate(self.points):
+            next_index = (i+1)%len(self.points)
+            lengths.append(np.sqrt(
+                (point[0]-self.points[next_index,0])**2 +
+                (point[1]-self.points[next_index,1])**2))
+        self.ab, self.bc, self.ca = lengths
+
+    def set_slopes(self):
+        """Calculates the slopes."""
+        self.mab = (self.a[1]-self.b[1])/(self.a[0]-self.b[0])
+        self.mbc = (self.b[1]-self.c[1])/(self.b[0]-self.c[0])
+        self.mca = (self.c[1]-self.a[1])/(self.c[0]-self.a[0])
+
+    def inside(self, x, y):
+        """Checks if the point satisfies the three inequalities.
+
+        For example, (y-Ay)/(x-Ax) > mAC
+        (given points a, b, c defined in clockwise fashion)
+
+        Args:
+            x (int): the x-coordinate
+            y (int): the y-coordinate
+
+        Returns:
+            True if the point is inside the triangle, False if not.
+        """
+        if (((y-self.a[1])/(x-self.a[0]) >= self.mca) & 
+            ((y-self.a[1])/(x-self.a[0]) <= self.mab)):
+            if self.mbc > 0:
+                return ((y-self.c[1])/(x-self.c[0]) >= self.mbc)
+            elif self.mbc < 0:
+                return ((y-self.c[1])/(x-self.c[0]) <= self.mbc)
+        return False
+        
+        
+    def draw(self, pvals, color):
+        """Draws a filled in triangle based on the endpoints.
+
+        Args:
+            pvals: A 3D array corresponding to X,Y pixel values,
+                with the 3rd dimension being color.
+            color: A tuple describing the color in RGB format.
+        """
+        # x values already sorted
+        ymin = np.min(self.points, axis=0)[1]
+        ymax = np.max(self.points, axis=0)[1]
+        for i in range(self.a[0]+1, self.c[0]):
+            for j in range(ymin, ymax):
+                if self.inside(i, j):
+                    pvals[i,j] = color
+            
 
 def draw_triangle(pvals, a, b, c, color):
     """Draws a filled triangle, e.g.
@@ -98,7 +150,9 @@ def main():
     pvals = np.full((IMAGEX, IMAGEY, 3), BGCOLOR, dtype="uint8")
 
     # draw blue triangle
-    draw_triangle(pvals, (0,0), (400,300), (500,200), FGCOLOR)
+    triangle = Triangle((0,0), (400,300), (500,200))
+    #draw_triangle(pvals, (0,0), (400,300), (500,200), FGCOLOR)
+    triangle.draw(pvals, FGCOLOR)
 
     # flip the image to conform to conventional image coordinates
     plotarr = np.flipud(pvals.transpose(1, 0, 2))
