@@ -45,12 +45,13 @@ class Triangle:
                 (point[0]-self.points[next_index,0])**2 +
                 (point[1]-self.points[next_index,1])**2))
 
-
     def calc_slopes(self):
         """Calculates the slopes."""
+        np.seterr(divide="ignore") # handle the division by zero separately
         self.mab = (self.a[1]-self.b[1])/(self.a[0]-self.b[0])
         self.mbc = (self.b[1]-self.c[1])/(self.b[0]-self.c[0])
         self.mca = (self.c[1]-self.a[1])/(self.c[0]-self.a[0])
+            
 
     def inside(self, x, y):
         """Checks if the point satisfies the three inequalities.
@@ -65,9 +66,17 @@ class Triangle:
         Returns:
             True if the point is inside the triangle, False if not.
         """
-        return (((y-self.a[1])/(x-self.a[0]) >= self.mca) &
-                ((y-self.a[1])/(x-self.a[0]) <= self.mab) &
-                ((y-self.c[1])/(x-self.c[0]) >= self.mbc))
+        # check for vertical lines
+        if self.a[0] == self.b[0]:
+            return (((y-self.a[1])/(x-self.a[0]) >= self.mca) &
+                    ((y-self.c[1])/(x-self.c[0]) >= self.mbc))
+        elif self.b[0] == self.c[0]:
+            return (((y-self.a[1])/(x-self.a[0]) >= self.mca) &
+                    ((y-self.a[1])/(x-self.a[0]) <= self.mab))
+        else:
+            return (((y-self.a[1])/(x-self.a[0]) >= self.mca) &
+                    ((y-self.a[1])/(x-self.a[0]) <= self.mab) &
+                    ((y-self.c[1])/(x-self.c[0]) >= self.mbc))
         
     def draw(self, pvals, color):
         """Draws a filled in triangle based on the endpoints.
@@ -166,7 +175,7 @@ def main():
     # define image parameters
     IMAGEX = 512 # width
     IMAGEY = 512 # height
-    SCALEFACTOR = 0.85 # scale factor for filling
+    SCALEFACTOR = 0.8 # scale factor for filling
     BGCOLOR = (255,255,255) # white
     
     # pixel values: x, y, color (in RGB)
@@ -182,16 +191,12 @@ def main():
 
     # scale the triangle around a
     # basically shorten sides ab and ca, recalculate the endpoints,
-    # then translate the triangle so the centroid is the same
-    b_scaled = triangle.a + (triangle.a+triangle.b)*SCALEFACTOR
-    c_scaled = triangle.a + (triangle.a+triangle.c)*SCALEFACTOR
-    centroid = (triangle.a + b_scaled + c_scaled)/3
-    offset = (triangle.centroid - centroid)/SCALEFACTOR
-    points_scaled = np.array([triangle.a, b_scaled, c_scaled])
-    scaled = np.rint(points_scaled + offset).astype(int)
+    # then translate the triangle so the centroid is the same    
+    scaled = (triangle.points
+              + (triangle.centroid - triangle.points)*(1-SCALEFACTOR))
+    scaled = np.rint(scaled).astype(int)
     fill = Triangle(*scaled)
     fill.draw(pvals, BGCOLOR)
-    
     
     # flip the image to conform to conventional image coordinates
     plotarr = np.flipud(pvals.transpose(1, 0, 2))
