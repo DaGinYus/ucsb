@@ -23,24 +23,30 @@ class Triangle:
         points = np.array([a, b, c])
         self.points = points[np.argsort(points[:,0])]
         self.a, self.b, self.c = self.points
-        self.set_lengths()
-        self.set_slopes()
+        self.calc_lengths()
+        self.calc_slopes()
+        self.validate()
+        self.centroid = np.sum(self.points, axis=0)/3
 
-    def set_lengths(self):
+    def validate(self):
+        """Checks if the triangle is valid."""
+        self.valid = 2*max(self.lengths) < sum(self.lengths)
+
+    def calc_lengths(self):
         """Calculates the side lengths of a triangle.
         
         Appends to the list the distance between the current point
         and the next point in the list (mod 3)
         """
-        lengths = []
+        self.lengths = []
         for i, point in enumerate(self.points):
             next_index = (i+1)%len(self.points)
-            lengths.append(np.sqrt(
+            self.lengths.append(np.sqrt(
                 (point[0]-self.points[next_index,0])**2 +
                 (point[1]-self.points[next_index,1])**2))
-        self.ab, self.bc, self.ca = lengths
 
-    def set_slopes(self):
+
+    def calc_slopes(self):
         """Calculates the slopes."""
         self.mab = (self.a[1]-self.b[1])/(self.a[0]-self.b[0])
         self.mbc = (self.b[1]-self.c[1])/(self.b[0]-self.c[0])
@@ -59,14 +65,9 @@ class Triangle:
         Returns:
             True if the point is inside the triangle, False if not.
         """
-        if (((y-self.a[1])/(x-self.a[0]) >= self.mca) & 
-            ((y-self.a[1])/(x-self.a[0]) <= self.mab)):
-            if self.mbc > 0:
-                return ((y-self.c[1])/(x-self.c[0]) >= self.mbc)
-            elif self.mbc < 0:
-                return ((y-self.c[1])/(x-self.c[0]) <= self.mbc)
-        return False
-        
+        return (((y-self.a[1])/(x-self.a[0]) >= self.mca) &
+                ((y-self.a[1])/(x-self.a[0]) <= self.mab) &
+                ((y-self.c[1])/(x-self.c[0]) >= self.mbc))
         
     def draw(self, pvals, color):
         """Draws a filled in triangle based on the endpoints.
@@ -83,59 +84,81 @@ class Triangle:
             for j in range(ymin, ymax):
                 if self.inside(i, j):
                     pvals[i,j] = color
-            
 
-def draw_triangle(pvals, a, b, c, color):
-    """Draws a filled triangle, e.g.
 
-           a
-          /|
-         / |
-        /  |
-       b---c
-
-    This is done by starting at the leftmost coordinate and defining
-    three equations. The triangle is filled in by setting pixel values
-    that fall in the range defined by the three equations.
+def input_coords(msg_string, imgsize):
+    """Validates and parses coordinates.
 
     Args:
-        pvals: The pixel value array. The function sets values in the
-            pixel value array to the color.
-        a [int]: A coordinate in (x, y) for a vertex of the triangle
-        b [int]: Another coordinate
-        c [int]: A final coordinate
-        color [int]: The color in RGB format.
+        msg_string: The string to ask the user something.
+        imgsize (int, int): The maximum dimensions of the image.
+
+    Returns:
+        coords: A tuple of coordinates.
     """
-    points = np.array([a,b,c])
+    usrinput = input(msg_string)
+    try:
+        x, y = usrinput.split(',')
+        x = int(x)
+        y = int(y)
+        if (0 <= x <= imgsize[0]) and (0 <= y <= imgsize[1]):
+            return (x, y)
+        else:
+            print("Image coordinates do not fit the image size!")
+            return input_coords(msg_string, imgsize)
+    except ValueError as e:
+        print(f"{e}, please try again")
+        return input_coords(msg_string, imgsize)
 
-    # sort points from leftmost to rightmost x-coordinate
-    p = points[np.argsort(points[:,0])]
-    leftx, midx, rightx = p[:,0]
+def input_rgb():
+    """Validates and parses RGB value.
 
-    # slopes
-    m1, m2 = [(p[i,1]-p[0,1])/(p[i,0]-p[0,0]) for i in [1,2]]
-    m = sorted([m1, m2], key=abs)
-    # the third slope is the steeper one calculated from the rightmost point
-    m3, m4 = [(p[i,1]-p[2,1])/(p[i,0]-p[2,0]) for i in [0,1]]
-    m.append(max([m3, m4], key=abs))
-    for x in range(rightx-leftx):
-        # plot in 2 sections, the left and right sides based on the midpoint
-        # (this is because the system of equations changes)
-        # the steeper slope corresponds to the shorter triangle leg
-        # the longer leg is plotted in one piece
-        y1 = round(m[0]*(x-p[0,0])) + p[0,1]
-        if x < midx-leftx:
-            y2 = round(m[1]*(x-p[0,0])) + p[0,1]
-        elif x >= midx:
-            y2 = int(round(m[2]*(x-p[1,0]))) + p[1,1]
-        y = np.sort([y1, y2])
-        pvals[x+leftx, y[0]:y[1]] = color
+    Returns:
+        color: A tuple of RGB values
+    """
+    usrinput = input("Enter RGB value (default (0,0,255)): ")
+    
+    try:
+        if not usrinput:
+            r = 0
+            g = 0
+            b = 255
+        else:
+            r, g, b = usrinput.split(',')
+            r = int(r)
+            g = int(g)
+            b = int(b)
+            
+        if (0 <= r <= 255) & (0 <= g <= 255) & (0 <= b <= 255):
+            return (r, g, b)
+        else:
+            print("Invalid RGB value")
+            return input_rgb
+    except ValueError as e:
+        print(f"{e}, please try again")
+        return input_rgb
 
+def params_from_input(bounds):
+    """Asks the user to determine the triangle parameters.
+    
+    Args:
+        bounds: A tuple of the max image dimensions.
 
+    Returns:
+        options: A tuple of options in the following format:
+            ([(ax,ay), (bx,by), (cx,cy)], color)
+    """
+    print("Enter comma-separated coordinates for: ")
+    a = input_coords("a: ", bounds)
+    b = input_coords("b: ", bounds)
+    c = input_coords("c: ", bounds)
+    color = input_rgb()
+    return ((a, b, c), color)
+    
 def main():
     """Allows the user to specify a triangle to draw.
 
-    Line thickness is created by blitting a copy of the background
+    Line thickness is created by drawing a copy of the background
     on top of a filled triangle. At the expense of speed, we get
     a programmatically simpler solution with uniform line thickness
     on all three sides (and nice looking corners).
@@ -143,17 +166,33 @@ def main():
     # define image parameters
     IMAGEX = 512 # width
     IMAGEY = 512 # height
+    SCALEFACTOR = 0.85 # scale factor for filling
     BGCOLOR = (255,255,255) # white
-    FGCOLOR = (0,0,255) # color
     
     # pixel values: x, y, color (in RGB)
     pvals = np.full((IMAGEX, IMAGEY, 3), BGCOLOR, dtype="uint8")
 
     # draw blue triangle
-    triangle = Triangle((0,0), (400,300), (500,200))
-    #draw_triangle(pvals, (0,0), (400,300), (500,200), FGCOLOR)
-    triangle.draw(pvals, FGCOLOR)
+    params = params_from_input((IMAGEX, IMAGEY))
+    triangle = Triangle(*params[0])
+    if not triangle.valid:
+        print("The points entered don't constitute a triangle. Exiting!")
+        return
+    triangle.draw(pvals, params[1])
 
+    # scale the triangle around a
+    # basically shorten sides ab and ca, recalculate the endpoints,
+    # then translate the triangle so the centroid is the same
+    b_scaled = triangle.a + (triangle.a+triangle.b)*SCALEFACTOR
+    c_scaled = triangle.a + (triangle.a+triangle.c)*SCALEFACTOR
+    centroid = (triangle.a + b_scaled + c_scaled)/3
+    offset = (triangle.centroid - centroid)/SCALEFACTOR
+    points_scaled = np.array([triangle.a, b_scaled, c_scaled])
+    scaled = np.rint(points_scaled + offset).astype(int)
+    fill = Triangle(*scaled)
+    fill.draw(pvals, BGCOLOR)
+    
+    
     # flip the image to conform to conventional image coordinates
     plotarr = np.flipud(pvals.transpose(1, 0, 2))
     
