@@ -40,7 +40,7 @@ def main():
     N = 100 # subdivisions
     MIN = 0
     MAX = 1
-    PLOTDIST = 10 # max x, y values
+    PLOTDIST = 12 # max x, y values
     
     x, y = np.full((2, N), np.linspace(-PLOTDIST, PLOTDIST, N))
     X, Y = np.meshgrid(x, y)
