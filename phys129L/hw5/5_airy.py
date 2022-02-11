@@ -32,7 +32,11 @@ def I(x, y):
 
 
 def main():
-    """Plots a 3D surface plot Airy pattern."""
+    """Plots a 3D surface plot Airy pattern.
+
+    I opted not to log scale the function but chose to log scale the
+    colormap instead. I think that this shows the peak better.
+    """
     N = 100 # subdivisions
     MIN = 0
     MAX = 1
