@@ -1,0 +1,18 @@
+1.
+The following is output from `ls -alF` at the top level of my project directory
+for this homework assignment. (I am not using a Raspberry Pi).
+
+total 1404
+drwxr-xr-x 2 matthew matthew   4096 Feb 10 17:27 ./
+drwxr-xr-x 6 matthew matthew   4096 Feb  7 20:33 ../
+-rw-r--r-- 1 matthew matthew      0 Feb 10 17:28 1_ls.txt
+-rw-r--r-- 1 matthew matthew  10298 Feb 10 17:25 2_diff.txt
+-rw-r--r-- 1 matthew matthew    391 Feb 10 17:25 3_explanation.txt
+-rw-r--r-- 1 matthew matthew   6790 Feb 10 12:01 3_triangle.py
+-rw-r--r-- 1 matthew matthew    848 Feb 10 12:03 4_mandelbrot.py
+-rw-r--r-- 1 matthew matthew    124 Feb  9 08:38 4_mandelbrot.py~
+-rw-r--r-- 1 matthew matthew   1633 Feb 10 17:23 5_airy.py
+-rw-r--r-- 1 matthew matthew   1140 Feb 10 14:43 5_airy.py~
+-rw-r--r-- 1 matthew matthew   1205 Feb 10 17:23 airy.pdf
+-rw-r--r-- 1 matthew matthew 786572 Feb 10 11:59 img.tif
+-rw-r--r-- 1 matthew matthew 589964 Feb 10 12:03 mandelbrot.tif
