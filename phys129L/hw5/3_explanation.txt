@@ -1,0 +1,2 @@
+3.
+My function works by drawing a filled triangle then drawing a scaled triangle matching the background color in order to achieve a thick line. I set pixels by using three inequalities and testing if the point fell inside the bounds of the triangle. In the case of a right triangle where they had the same x-coordinate, the inequalities changed slightly since the slope approaches infinity.
