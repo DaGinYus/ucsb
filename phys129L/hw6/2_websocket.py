@@ -8,6 +8,7 @@ Phys 129L Hw6 Pb2
 
 import socket
 import ssl
+import re
 
 def main():
     """Checks when the webpage announcements were last updated.
@@ -29,11 +30,23 @@ def main():
         with context.wrap_socket(sock, server_hostname=HOST) as ssock:
             f = ssock.makefile("rwb")
             with f:
-                f.write(b"GET /~phys129/lipman HTTP/1.1\r\n"
+                f.write(b"GET /~phys129/lipman/ HTTP/1.1\r\n"
                         b"Host: web.physics.ucsb.edu\r\n\r\n")
-                f.flush()
-                print(f.readlines())
+                f.flush() # write out the buffer
+                data = f.readlines()
 
+    for line in data:
+        line = line.decode()
+        if "Latest update:" in line:
+            # take everything between the two carets
+            # use a group to just match the stuff inside the carets
+            # the `?` makes it non greedy
+            result = re.search(">(.*?)<", line)
+            if result:
+                # replace the nbsp
+                last_updated = re.sub("&nbsp;", ' ', result.group(1))
+
+    print(f"The web page announcements were last updated on:\n{last_updated}")
 
 if __name__ == "__main__":
     main()
