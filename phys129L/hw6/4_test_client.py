@@ -11,16 +11,15 @@ import socket
 
 def main():
     """A simple client to test the time server."""
-
-    host = input("Enter address: ")
-    port = input("Enter port: ")
+    PORT = 55555
+    addr = input("Enter address: ")
 
     # use loopback address
-    with socket.create_connection((host, port)) as sock:
+    with socket.create_connection((addr, PORT)) as sock:
         f = sock.makefile("r")
         with f:
-            print(f.readlines())
+            print(f.readline())
+
 
 if __name__ == "__main__":
     main()
-        
