@@ -8,28 +8,40 @@ Phys 129L Hw6 Pb4
 
 import logging
 import socket
-import threading
 import time
 
 
 def main():
     """Serves the current time and date in human-readable form.
 
-    I use a `with` statement to handle the closing of the socket
-    automatically. By default, the server is listening on port 55555.
+    Threading is used so the server can accept multiple connections.
     """
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s %(message)s",
+                        datefmt="%Y-%m-%d %H:%M:%S",
+                        handlers=[logging.StreamHandler()])
     PORT = 55555
-
+    
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as serversocket:
         hostname = socket.gethostname()
-        serversocket.bind((hostname, PORT))
+        serversocket.bind(('', PORT))
         logging.info("Started server at %s on port %i", hostname, PORT)
         serversocket.listen(5)
         
         while True:
-            (clientsocket, address) = serversocket.accept()
-            logging.info(address)
+            clientsocket, address = serversocket.accept()
+            logging.info("Connection from %s accepted", address[0])
+            tfile = clientsocket.makefile("w")
+            with tfile:
+                tfile.write(time.asctime())
+                tfile.flush()
+                logging.info("Sent time to %s", address[0])
+            clientsocket.close()
+            logging.info("Closing connection to %s", address[0])
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        logging.info("Shutting server down")
