@@ -14,7 +14,7 @@ import time
 def main():
     """Serves the current time and date in human-readable form.
 
-    Threading is used so the server can accept multiple connections.
+    I use a `with` statement so that the socket is closed automatically.
     """
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s %(message)s",
