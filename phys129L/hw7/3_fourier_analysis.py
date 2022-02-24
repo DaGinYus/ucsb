@@ -27,20 +27,30 @@ def main():
     npts = len(sundata)
     fs = npts/FTIME # samples per second
 
-    plt.plot(*np.flip(psd(sundata, npts, fs), axis=0), lw=0.5, label="Sunlight")
-    plt.plot(*np.flip(psd(LEDdata, npts, fs), axis=0), lw=0.5, label="LED")
+    fig = plt.figure(figsize=(8, 7))
+    ax = fig.add_axes((0.1, 0.2, 0.8, 0.7))
+    ax.plot(*np.flip(psd(sundata, npts, fs), axis=0), lw=0.5, label="Sun")
+    ax.plot(*np.flip(psd(LEDdata, npts, fs), axis=0), lw=0.5, label="LED")
     annotations = {
-        "1": (2.5, 10.7),
-        "2": (61.8, 6.8e-07),
-        "3": (121, 0.002),
+        "1": (61.8, 6.8e-07),
+        "2": (121, 0.002),
+        "3": (155.5, 5.08e-05),
     }
     for label, loc in annotations.items():
-        plt.annotate(label, loc)
-    plt.yscale("log")
-    plt.ylabel("Power")
-    plt.xlabel("Frequency (10^14 Hz)")
-    plt.title("Power Spectrum of Two Signals")
-    plt.legend()
+        ax.annotate(label, loc)
+    ax.set_yscale("log")
+    ax.set_ylabel("Power")
+    ax.set_xlabel("Frequency (10^14 Hz)")
+    foottext = ("Since the data describes light, I've assumed that the "
+                "frequency matches the same order of magnitude of light "
+                "waves.\nThe numbers highlight several peaks in the graph. "
+                "Note that there are far more distinct peaks in the LED "
+                "graph,\nsince those are the spectral lines emitted by "
+                "the LED, whereas the sun emits a more continuous spectrum.")
+    fig.text(0.5, 0.07, foottext, ha="center", fontsize=8)
+    ax.set_title("Power Spectrum of Two Signals")
+    ax.legend()
+    plt.savefig("spectrum.pdf", format="pdf")
     plt.show()
 
 if __name__ == "__main__":
