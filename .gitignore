@@ -2,6 +2,7 @@
 *.zip
 *.DS_Store
 *.venv
+__pycache__
 
 # Emacs autosave & temp files
 *~
