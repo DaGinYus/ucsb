@@ -39,8 +39,8 @@ def main():
     for label, loc in annotations.items():
         ax.annotate(label, loc)
     ax.set_yscale("log")
-    ax.set_ylabel("Power")
-    ax.set_xlabel("Frequency (10^14 Hz)")
+    ax.set_ylabel("Power [Energy/Time]")
+    ax.set_xlabel("Frequency [1e14 Hz]")
     foottext = ("Since the data describes light, I've assumed that the "
                 "frequency matches the same order of magnitude of light "
                 "waves.\nThe numbers highlight several peaks in the graph. "
@@ -52,6 +52,7 @@ def main():
     ax.legend()
     plt.savefig("spectrum.pdf", format="pdf")
     plt.show()
+
 
 if __name__ == "__main__":
     main()
