@@ -13,7 +13,11 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    """Plots the variance in Monte Carlo integration."""
+    """Plots the variance in Monte Carlo integration.
+
+    The Monte Carlo function is imported from the other Python file for
+    part (a) of this homework problem.
+    """
     N = np.arange(20, 2000)
     var = np.array([montecarlo.integrate(n) for n in N])[:,1]
     plt.plot(var, label="Variance")
