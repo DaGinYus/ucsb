@@ -16,7 +16,7 @@ def f(x):
     return np.exp(-1*x**2)
 
 
-def riemann_integrate(func, start, end, nints):
+def riemann_integrate(func, start, end, nints, *args, **kwargs):
     """Performs integration by left-sided Riemann approximation.
 
     Args:
@@ -24,22 +24,25 @@ def riemann_integrate(func, start, end, nints):
         start (float): The left end of the bounds.
         end (float): The right end of the bounds.
         nints (int): The number of subdivisions.
+        val (optional): The expected value of integration.
 
     Returns:
         result: The result of integration.
         rel_err: The fractional (relative) error in integration.
     """
-    val = np.sqrt(np.pi) # known value of function
+    rel_err = None
     result = 0
     width = (end - start) / nints
     points = np.linspace(start, end, nints)
     for x in points:
-        result += func(x) * width
-    rel_err = np.abs(result - val) / val
+        result += func(x, *args) * width
+    if "val" in kwargs.keys():
+        val = kwargs["val"]
+        rel_err = np.abs(result - val) / val
     return result, rel_err
 
 
-def mc_integrate(func, start, end, npts):
+def mc_integrate(func, start, end, npts, *args, **kwargs):
     """Performs integration by Monte Carlo integration.
 
     Points are generated using numpy routines to avoid `for` loop overhead.
@@ -49,17 +52,20 @@ def mc_integrate(func, start, end, npts):
         start (float): The left end of the bounds.
         end (float): The right end of the bounds.
         npts (int): The number of subdivisions.
+        val (optional): The expected value of integration.
 
     Returns:
         result: The result of integration.
         rel_err: The fractional error compared to the known value of the
             integral.
     """
-    val = np.sqrt(np.pi) # known value of function
+    rel_err = None
     interval = end - start
     points = np.random.uniform(start, end, npts)
-    result = interval / npts * np.sum(func(points))
-    rel_err = np.abs(result - val) / val
+    result = interval / npts * np.sum(func(points, *args))
+    if "val" in kwargs.keys():
+        val = kwargs["val"]
+        rel_err = np.abs(result - val) / val
     return result, rel_err
 
 
@@ -69,13 +75,15 @@ def main():
     end = 5000
     numints = 1_000_000
     numpts = 100_000_000
+    expected = np.sqrt(np.pi)
 
-    riemann = riemann_integrate(f, start, end, numints)
+    riemann = riemann_integrate(f, start, end, numints, val=expected)
     print(f"Riemann Sum from {start} to {end} with {numints} subdivisions:")
     print(f"  Value: {riemann[0]}\n"
           f"  Error: {riemann[1]}")
-    montecarlo = mc_integrate(f, start, end, numpts)
-    print(f"Monte Carlo Integration from {start} to {end} with {numpts} points:")
+    montecarlo = mc_integrate(f, start, end, numpts, val=expected)
+    print(f"Monte Carlo Integration from {start} "
+          f"to {end} with {numpts} points:")
     print(f"  Value: {montecarlo[0]}\n"
           f"  Error: {montecarlo[1]}")
 
@@ -84,8 +92,10 @@ def main():
     mc_errs = []
     nums = range(10, 10001, 10)
     for n in nums:
-        riemann_errs.append(riemann_integrate(f, start, end, n)[1])
-        mc_errs.append(mc_integrate(f, start, end, n)[1])
+        riemann_errs.append(riemann_integrate(f, start, end, n,
+                                              val=expected)[1])
+        mc_errs.append(mc_integrate(f, start, end, n,
+                                    val=expected)[1])
     fig, axs = plt.subplots(2, figsize=(6, 8))
     fig.subplots_adjust(hspace=0.3, top=0.9)
     ax1, ax2 = axs
