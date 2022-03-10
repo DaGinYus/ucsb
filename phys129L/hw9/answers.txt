@@ -1,0 +1,52 @@
+Text Answers for System Call Tracing
+Matthew Wong
+ a) The lines around and including the forking call:
+  1341490 write(1, "9\n", 2)              = 2
+  1341490 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL) = 0 (Timeout)
+  1341490 write(1, "10\n", 3)             = 3
+  1341490 write(1, "Forking!\n", 9)       = 9
+  1341490 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL) = 0 (Timeout)
+  1341490 clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f1b1aff0a10) = 1341503
+  1341503 set_robust_list(0x7f1b1aff0a20, 24) = 0
+  1341490 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL <unfinished ...>
+  1341503 write(1, "Running `ls -l` command\n", 24) = 24
+  1341503 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL <unfinished ...>
+  1341490 <... pselect6 resumed>)         = 0 (Timeout)
+
+  We can see that the parent PID is 1341490 in the left hand numbers. The parent process is writing
+  numbers when it receives the command to fork itself. This is implemented in the line that says
+  `clone(child_stack=NULL ... ) = 1341503`. The important thing to note here is that the child PID
+  is 1341503. We can see in the lines after the process is forked that the child process starts
+  performing operations, as indicated by the numbers on the left. Meanwhile, the parent process
+  continues to perform its tasks, as indicated by the write(1, Running `ls -l` command\n", 24) call.
+
+ b) The lines leading up to and including the child process exiting:
+  1341503 write(1, "-rw-r--r-- 1 matthew matthew 176858 Mar  9 20:43 tr\n", 52) = 52
+  1341503 write(1, "-rwxr-xr-x 1 matthew matthew    372 Mar  9 20:06 trp\n", 53) = 53
+  1341503 close(1)                        = 0
+  1341503 close(2)                        = 0
+  1341503 exit_group(0)                   = ?
+  1341503 +++ exited with 0 +++
+
+  The left hand numbers indicate that this is the child process doing stuff. The write() statements
+  are from the child process printing out the lines from `ls`. The write command takes three
+  arguments. The file descriptor, which is standard output here, the character buffer to write, and
+  the number of bytes to write. Then the child process closes the file descriptors corresponding to
+  stdout and stderr (standard file descriptors), then calls exit_group() which exits all threads in
+  a process.
+
+ c) The lines where the parent process receives the signal that kills it:
+  1341490 write(2, "KeyboardInterrupt\n", 18) = 18
+  1341490 rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK, sa_restorer=0x7f1b1b12e560}, {sa_handler=0x7f1b 1b3d59ed, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK, sa_restorer=0x7f1b1b12e560}, 8) = 0
+  1341490 rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK, sa_restorer=0x7f1b1b12e560}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK, sa_restorer=0x7f1b1b12e560}, 8) = 0
+  1341490 getpid()                        = 1341490
+  1341490 kill(1341490, SIGINT)           = 0
+  1341490 --- SIGINT {si_signo=SIGINT, si_code=SI_USER, si_pid=1341490, si_uid=1000} ---
+  1341490 +++ killed by SIGINT +++
+
+  The PID numbers indicate that we are back in the parent process. The write() call is from the
+  Python debugger which tells the user where the program terminated and why (keyboard interrupt in
+  this case). Then, rt_sigaction examines and changes the signal action, which is SIGINT (interrupt)
+  Then the process finds its own PID as in getpid(), then kills the process by calling
+  kill(1341490, SIGINT) which sends the signal SIGINT to the process 1341490. Then the process
+  exits and the program is finished running.
